@@ -172,6 +172,7 @@
 							<workingDirectory>${basedir}/csharp</workingDirectory>
 							<environmentVariables>
 								<HOME>${env.USERPROFILE}</HOME>
+								<DOTNET_CLI_HOME >${env.USERPROFILE}/.dotnet/tools</DOTNET_CLI_HOME >
 							</environmentVariables>
 							<executable>csharp/buildall.bat</executable>
 							<successCodes>
