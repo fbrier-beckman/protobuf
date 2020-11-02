@@ -1,0 +1,31 @@
+<assembly>
+  <!-- 
+    assembly descriptor to create a zip package containing the scripts laid
+    out as in the src/main/scripts directory.
+  -->
+  <id>installer</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <files>
+    <!-- include the build.properties file, filled in with current properties -->
+    <file>
+      <source>src/main/assembly/protobuf.manifest.txt</source>
+      <outputDirectory>.</outputDirectory>
+      <filtered>true</filtered>
+    </file>
+  </files>
+  <fileSets>
+    <fileSet>
+      <directory>csharp\src\Google.Protobuf\bin\Debug\net45</directory>
+      <lineEnding>keep</lineEnding>
+      <outputDirectory>${artifactId}-${version}</outputDirectory>
+	  <includes>
+		  <include>*.dll</include>
+		  <include>*.pdb</include>
+	  </includes>
+      <fileMode>0755</fileMode>
+    </fileSet>
+  </fileSets>
+</assembly>

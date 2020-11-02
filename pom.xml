@@ -1,0 +1,224 @@
+﻿<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<name>Google Protocol Buffers</name>
+	<description>Build and deploy</description>
+
+	<groupId>protocolbuffers</groupId>
+	<artifactId>protobuf</artifactId>
+	<version>3.12.4-SNAPSHOT</version>
+
+	<packaging>pom</packaging>
+	<modelVersion>4.0.0</modelVersion>
+
+	<scm>
+		<connection>scm:git:git@github.com:fbrier-beckman/protobuf.git</connection>
+		<developerConnection>scm:git:git@github.com:fbrier-beckman/protobuf.git</developerConnection>
+		<url>https://github.com/fbrier-beckman/protobuf.git</url>
+	</scm>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>repo.beckman</id>
+			<url>s3://beckman-build-artifacts/m2/snapshot</url>
+		</snapshotRepository>
+		<repository>
+			<id>repo.beckman</id>
+			<url>s3://beckman-build-artifacts/m2/release</url>
+		</repository>
+		<site>
+			<id>repo.beckman</id>
+			<url>s3://beckman-build-artifacts/docs/${project.groupId}/${project.artifactId}/${project.version}</url>
+		</site>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+			<id>repo.beckman</id>
+			<url>https://s3-us-west-2.amazonaws.com/beckman-build-artifacts/m2/release</url>
+		</repository>
+		<repository>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+			<id>repo.beckman.snapshot</id>
+			<url>https://s3-us-west-2.amazonaws.com/beckman-build-artifacts/m2/snapshot</url>
+		</repository>
+	</repositories>
+
+	<properties>
+		<project.build.sourceEncoding>iso-8859-1</project.build.sourceEncoding>
+		<visualstudio.devenv>C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe</visualstudio.devenv>
+		<mstest>"C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\MSBuild\Current\Bin\MSBuild.exe"</mstest>
+		<timestamp>${maven.build.timestamp}</timestamp>
+		<maven.build.timestamp.format>ssSS</maven.build.timestamp.format>
+	</properties>
+
+	<dependencies>
+		<!-- ****************************************************************-->
+		<!-- *****                     Using NUGET                      *****-->
+		<!-- ****************************************************************-->
+	</dependencies>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changelog-plugin</artifactId>
+				<version>2.3</version>
+			</plugin>
+		</plugins>
+	</reporting>
+
+	<build>
+		<extensions>
+			<extension>
+				<groupId>org.kuali.maven.wagons</groupId>
+				<artifactId>maven-s3-wagon</artifactId>
+				<version>1.2.1</version>
+			</extension>
+		</extensions>
+
+		<plugins>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>csharp/src/Google.Protobuf/bin</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>csharp/src/Google.Protobuf/obj</directory>
+							<includes>
+								<include>**/*</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.12</version>
+				<executions>
+					<execution>
+						<phase>initialize</phase>
+						<id>parse-version</id>
+						<goals>
+							<goal>parse-version</goal>
+						</goals>
+					</execution>
+					<execution>
+						<phase>initialize</phase>
+						<id>timestamp-property</id>
+						<goals>
+							<goal>timestamp-property</goal>
+						</goals>
+						<configuration>
+							<name>current.year</name>
+							<pattern>yyyy</pattern>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+				<version>2.1</version>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-scm-plugin</artifactId>
+				<version>1.9.5</version>
+				<configuration>
+					<tag>${project.artifactId}-${project.version}</tag>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.3</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.5.0</version>
+				<executions>
+
+					<execution>
+						<id>compile-protobuf</id>
+						<phase>compile</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<workingDirectory>${basedir}/csharp</workingDirectory>
+							<executable>csharp/buildall.bat</executable>
+							<successCodes>
+								<successCode>0</successCode>
+							</successCodes>
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.3</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.doxia</groupId>
+						<artifactId>doxia-module-markdown</artifactId>
+						<version>1.3</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.9</version>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.6</version>
+				<executions>
+					<execution>
+						<id>deploy-assembly</id>
+						<phase>package</phase>
+						<configuration>
+							<appendAssemblyId>false</appendAssemblyId>
+							<outputDirectory>target/</outputDirectory>
+							<descriptors>
+								<value>src/main/assembly/installer-assembly.xml</value>
+							</descriptors>
+						</configuration>
+						<goals>
+							<goal>attached</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
